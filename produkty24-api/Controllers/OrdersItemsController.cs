@@ -1,7 +1,6 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Produkty24_API.Db;
 using Produkty24_API.Models;
 using Produkty24_API.Models.DTO.OrdersItems;
@@ -10,74 +9,79 @@ using Produkty24_API.Processors;
 
 namespace Produkty24_API.Controllers
 {
-    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class OrdersItemsController : ControllerBase
     {
-        private readonly DataContext dataContext;
-        private readonly IMapper mapper;
-        private readonly IDateTimeProvider dateTimeProvider;
+        private readonly IDbConnectionFactory _db;
+        private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public OrdersItemsController(DataContext dataContext, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public OrdersItemsController(IDbConnectionFactory db, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
-            this.dataContext = dataContext;
-            this.mapper = mapper;
-            this.dateTimeProvider = dateTimeProvider;
+            _db = db;
+            _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         [HttpGet]
         public async Task<ActionResult<PageInfo<AllOrderItemsDto>>> GetAll([FromQuery] int page, int pageSize)
         {
-            IQueryable<OrderItemEntity> source = dataContext.OrdersItems;
-            var totalPages = PageInfo<Object>.PagesCount(source, pageSize);
+            using var connection = _db.CreateConnection();
+            var totalCount = await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM OrdersItems");
+            var totalPages = PageInfo<object>.PagesCount(totalCount, pageSize);
 
             if (page < 1 || page > totalPages)
-            {
                 return NotFound(new { Message = $"Page {page} does not exist! Total pages: {totalPages}" });
-            }
 
-            var entities = await source.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
-            var ordersItems = mapper.Map<List<AllOrderItemsDto>>(entities);
+            var entities = await connection.QueryAsync<OrderItemEntity, OrderEntity, StockItemEntity, OrderItemEntity>(
+                @"SELECT oi.*, o.Id, o.Date, si.Id, si.Name FROM OrdersItems oi
+                  LEFT JOIN Orders o ON oi.OrderId = o.Id
+                  LEFT JOIN StockItems si ON oi.StockItemId = si.Id
+                  LIMIT @PageSize OFFSET @Offset",
+                (oi, o, si) => { oi.Order = o; oi.StockItem = si; return oi; },
+                new { PageSize = pageSize, Offset = (page - 1) * pageSize });
 
-            var pageResponse = new PageInfo<AllOrderItemsDto>(totalPages, page, ordersItems);
-
-            return Ok(pageResponse);
+            var ordersItems = _mapper.Map<List<AllOrderItemsDto>>(entities.ToList());
+            return Ok(new PageInfo<AllOrderItemsDto>(totalPages, page, ordersItems));
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<OrderItemEditDto>> Get(int id)
         {
-            var entity = await dataContext.OrdersItems.FindAsync(id);
+            using var connection = _db.CreateConnection();
+            var entity = await connection.QuerySingleOrDefaultAsync<OrderItemEntity>(
+                "SELECT * FROM OrdersItems WHERE Id = @Id", new { Id = id });
 
             if (entity == null)
-            {
-                return NotFound(new { id = id });
-            }
+                return NotFound(new { id });
 
-            var orderItem = new OrderItemEditDto();
-            mapper.Map(entity, orderItem);
-
+            var orderItem = _mapper.Map<OrderItemEditDto>(entity);
             return Ok(orderItem);
         }
 
         [HttpPost]
-        public async Task<ActionResult<OrderItemEntity>> Create([FromBody] OrderItemCreateDto orderItem)
+        public async Task<ActionResult<OrderItemCreateDto>> Create([FromBody] OrderItemCreateDto orderItem)
         {
-            if (!ModelState.IsValid) {
+            if (!ModelState.IsValid)
                 return BadRequest(orderItem);
-            }
 
-            var exchangeRates = await GetCurrentExchangeRatesAsync();
-            var entity = mapper.Map<OrderItemEntity>(orderItem);
+            using var connection = _db.CreateConnection();
 
-            entity.StockItem = await dataContext.StockItems.FindAsync(entity.StockItemId);
+            var exchangeRates = await GetCurrentExchangeRatesAsync(connection);
+            var entity = _mapper.Map<OrderItemEntity>(orderItem);
+
+            entity.StockItem = await connection.QuerySingleOrDefaultAsync<StockItemEntity>(
+                "SELECT * FROM StockItems WHERE Id = @Id", new { Id = entity.StockItemId });
 
             var orderItemStateProcessor = new OrderItemStateProcessor(exchangeRates);
             orderItemStateProcessor.Calculate(entity);
 
-            await dataContext.OrdersItems.AddAsync(entity);
-            await dataContext.SaveChangesAsync();
+            var id = await connection.ExecuteScalarAsync<int>(
+                @"INSERT INTO OrdersItems (OrderId, StockItemId, Quantity, Price, Discount, Total, Profit, Expenses, ExchangeRate)
+                  VALUES (@OrderId, @StockItemId, @Quantity, @Price, @Discount, @Total, @Profit, @Expenses, @ExchangeRate);
+                  SELECT last_insert_rowid();", entity);
+            entity.Id = id;
 
             return Ok(orderItem);
         }
@@ -85,22 +89,29 @@ namespace Produkty24_API.Controllers
         [HttpPut]
         public async Task<ActionResult<OrderItemEntity>> Edit([FromBody] OrderItemEditDto orderItem)
         {
-            if (!ModelState.IsValid) {
+            if (!ModelState.IsValid)
                 return BadRequest(orderItem);
-            }
 
-            var entity = await dataContext.OrdersItems.FindAsync(orderItem.Id);
+            using var connection = _db.CreateConnection();
+            var entity = await connection.QuerySingleOrDefaultAsync<OrderItemEntity>(
+                "SELECT * FROM OrdersItems WHERE Id = @Id", new { Id = orderItem.Id });
 
-            if (entity == null) {
+            if (entity == null)
                 return NotFound(new { id = orderItem.Id });
-            }
 
-            mapper.Map(orderItem, entity);
+            // Load related StockItem for calculation
+            entity.StockItem = await connection.QuerySingleOrDefaultAsync<StockItemEntity>(
+                "SELECT * FROM StockItems WHERE Id = @Id", new { Id = entity.StockItemId });
+
+            _mapper.Map(orderItem, entity);
 
             var orderItemStateProcessor = new OrderItemStateProcessor();
             orderItemStateProcessor.Calculate(entity);
 
-            await dataContext.SaveChangesAsync();
+            await connection.ExecuteAsync(
+                @"UPDATE OrdersItems SET OrderId = @OrderId, StockItemId = @StockItemId, Quantity = @Quantity,
+                  Price = @Price, Discount = @Discount, Total = @Total, Profit = @Profit,
+                  Expenses = @Expenses, ExchangeRate = @ExchangeRate WHERE Id = @Id", entity);
 
             return Ok(entity);
         }
@@ -108,39 +119,32 @@ namespace Produkty24_API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete([FromRoute] int id)
         {
-            dataContext.Remove(new OrderItemEntity() { Id = id });
-            await dataContext.SaveChangesAsync();
-
+            using var connection = _db.CreateConnection();
+            await connection.ExecuteAsync("DELETE FROM OrdersItems WHERE Id = @Id", new { Id = id });
             return Ok(id);
         }
 
-        private async Task<IEnumerable<ExchangeRateEntity>> GetCurrentExchangeRatesAsync()
+        private async Task<IEnumerable<ExchangeRateEntity>> GetCurrentExchangeRatesAsync(System.Data.IDbConnection connection)
         {
-            var currencies = await dataContext.Currencies.ToListAsync();
+            var currencies = await connection.QueryAsync<CurrencyEntity>("SELECT * FROM Currencies");
             var exchangeRates = new List<ExchangeRateEntity>();
 
             foreach (var currency in currencies)
             {
-                var currentExchangeRate = await dataContext.ExchangeRates
-                    .Where(e => e.CurrencyId == currency.Id)
-                    .OrderByDescending(e => e.Id)
-                    .FirstOrDefaultAsync();
+                var currentRate = await connection.QueryFirstOrDefaultAsync<ExchangeRateEntity>(
+                    "SELECT * FROM ExchangeRates WHERE CurrencyId = @CurrencyId ORDER BY Id DESC LIMIT 1",
+                    new { CurrencyId = currency.Id });
 
-                if (currentExchangeRate != null)
-                    exchangeRates.Add(currentExchangeRate);
-
+                if (currentRate != null)
+                    exchangeRates.Add(currentRate);
                 else
-                {
-                    var defaultExchangeRate = new ExchangeRateEntity()
+                    exchangeRates.Add(new ExchangeRateEntity
                     {
                         Id = -1,
-                        Date = dateTimeProvider.UtcNow,
+                        Date = _dateTimeProvider.UtcNow,
                         CurrencyId = currency.Id,
                         Value = 1
-                    };
-
-                    exchangeRates.Add(defaultExchangeRate);
-                }
+                    });
             }
 
             return exchangeRates;

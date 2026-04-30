@@ -1,10 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Produkty24_API.Models
 {
     public class PageInfo<T>
@@ -20,11 +13,9 @@ namespace Produkty24_API.Models
             TotalPages = totalPages;
         }
 
-        public static int PagesCount(IQueryable<T> source, int pageSize)
+        public static int PagesCount(int totalCount, int pageSize)
         {
-            var totalCount = source.Count();
             var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-
             return Math.Max(1, totalPages);
         }
     }

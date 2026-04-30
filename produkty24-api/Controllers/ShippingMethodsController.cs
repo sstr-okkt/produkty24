@@ -1,35 +1,26 @@
-using AutoMapper;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Produkty24_API.Db;
 using Produkty24_API.Models.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Produkty24_API.Controllers
 {
-    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ShippingMethodsController : ControllerBase
     {
-        private readonly DataContext dataContext;
-        private readonly IMapper mapper;
+        private readonly IDbConnectionFactory _db;
 
-        public ShippingMethodsController(DataContext dataContext, IMapper mapper)
+        public ShippingMethodsController(IDbConnectionFactory db)
         {
-            this.dataContext = dataContext;
-            this.mapper = mapper;
+            _db = db;
         }
 
         [HttpGet("list")]
         public async Task<ActionResult<IEnumerable<ShippingMethodEntity>>> GetAllList()
         {
-            var entities = await dataContext.ShippingMethods.ToListAsync();
-
+            using var connection = _db.CreateConnection();
+            var entities = await connection.QueryAsync<ShippingMethodEntity>("SELECT * FROM ShippingMethods");
             return Ok(entities);
         }
     }

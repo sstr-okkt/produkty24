@@ -1,31 +1,26 @@
-using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Produkty24_API.Db;
-using Produkty24_API.Models.DTO.Clients;
+using Produkty24_API.Models.Entities;
 
 namespace Produkty24_API.Controllers
 {
-    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class OrderStatusesController : ControllerBase
     {
-        private readonly DataContext dataContext;
-        private readonly IMapper mapper;
+        private readonly IDbConnectionFactory _db;
 
-        public OrderStatusesController(DataContext dataContext, IMapper mapper)
+        public OrderStatusesController(IDbConnectionFactory db)
         {
-            this.dataContext = dataContext;
-            this.mapper = mapper;
+            _db = db;
         }
 
         [HttpGet("list")]
-        public async Task<ActionResult<IEnumerable<AllClientsDto>>> GetAllList()
+        public async Task<ActionResult<IEnumerable<OrderStatusEntity>>> GetAllList()
         {
-            var entities = await dataContext.OrderStatuses.ToListAsync();
-
+            using var connection = _db.CreateConnection();
+            var entities = await connection.QueryAsync<OrderStatusEntity>("SELECT * FROM OrderStatuses");
             return Ok(entities);
         }
     }

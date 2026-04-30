@@ -1,31 +1,26 @@
-using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Produkty24_API.Db;
 using Produkty24_API.Models.Entities;
 
 namespace Produkty24_API.Controllers
 {
-    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CurrenciesController : ControllerBase
     {
-        private readonly DataContext dataContext;
-        private readonly IMapper mapper;
+        private readonly IDbConnectionFactory _db;
 
-        public CurrenciesController(DataContext dataContext, IMapper mapper)
+        public CurrenciesController(IDbConnectionFactory db)
         {
-            this.dataContext = dataContext;
-            this.mapper = mapper;
+            _db = db;
         }
 
         [HttpGet("list")]
         public async Task<ActionResult<IEnumerable<CurrencyEntity>>> GetAllList()
         {
-            var entities = await dataContext.Currencies.ToListAsync();
-
+            using var connection = _db.CreateConnection();
+            var entities = await connection.QueryAsync<CurrencyEntity>("SELECT * FROM Currencies");
             return Ok(entities);
         }
     }

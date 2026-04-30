@@ -1,7 +1,6 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Produkty24_API.Db;
 using Produkty24_API.Models;
 using Produkty24_API.Models.DTO.Clients;
@@ -9,80 +8,92 @@ using Produkty24_API.Models.Entities;
 
 namespace Produkty24_API.Controllers
 {
-    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ClientsController : ControllerBase
     {
-        private readonly DataContext dataContext;
-        private readonly IMapper mapper;
-        private readonly IDateTimeProvider dateTimeProvider;
+        private readonly IDbConnectionFactory _db;
+        private readonly IMapper _mapper;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public ClientsController(DataContext dataContext, IMapper mapper, IDateTimeProvider dateTimeProvider)
+        public ClientsController(IDbConnectionFactory db, IMapper mapper, IDateTimeProvider dateTimeProvider)
         {
-            this.dataContext = dataContext;
-            this.mapper = mapper;
-            this.dateTimeProvider = dateTimeProvider;
+            _db = db;
+            _mapper = mapper;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         [HttpGet]
         public async Task<ActionResult<PageInfo<AllClientsDto>>> GetAll([FromQuery] int page, int pageSize)
         {
-            IQueryable<ClientEntity> source = dataContext.Clients;
-            var totalPages = PageInfo<Object>.PagesCount(source, pageSize);
+            using var connection = _db.CreateConnection();
+            var totalCount = await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Clients");
+            var totalPages = PageInfo<object>.PagesCount(totalCount, pageSize);
 
             if (page < 1 || page > totalPages)
-            {
                 return NotFound(new { Message = $"Page {page} does not exist! Total pages: {totalPages}" });
-            }
-            
-            var entities = await source.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
-            var clients = mapper.Map<List<AllClientsDto>>(entities);
 
-            var pageResponse = new PageInfo<AllClientsDto>(totalPages, page, clients);
+            var entities = await connection.QueryAsync<ClientEntity, CountryEntity, ShippingMethodEntity, ClientEntity>(
+                @"SELECT cl.*, co.Id, co.Name, sm.Id, sm.Name FROM Clients cl
+                  LEFT JOIN Countries co ON cl.CountryId = co.Id
+                  LEFT JOIN ShippingMethods sm ON cl.ShippingMethodId = sm.Id
+                  LIMIT @PageSize OFFSET @Offset",
+                (cl, co, sm) => { cl.Country = co; cl.ShippingMethod = sm; return cl; },
+                new { PageSize = pageSize, Offset = (page - 1) * pageSize });
 
-            return Ok(pageResponse);
+            var clients = _mapper.Map<List<AllClientsDto>>(entities.ToList());
+            return Ok(new PageInfo<AllClientsDto>(totalPages, page, clients));
         }
 
         [HttpGet("list")]
         public async Task<ActionResult<IEnumerable<AllClientsDto>>> GetAllList()
         {
-            var entities = await dataContext.Clients.ToListAsync();
-            var clients = mapper.Map<IEnumerable<AllClientsDto>>(entities);
+            using var connection = _db.CreateConnection();
+            var entities = await connection.QueryAsync<ClientEntity, CountryEntity, ShippingMethodEntity, ClientEntity>(
+                @"SELECT cl.*, co.Id, co.Name, sm.Id, sm.Name FROM Clients cl
+                  LEFT JOIN Countries co ON cl.CountryId = co.Id
+                  LEFT JOIN ShippingMethods sm ON cl.ShippingMethodId = sm.Id",
+                (cl, co, sm) => { cl.Country = co; cl.ShippingMethod = sm; return cl; });
 
+            var clients = _mapper.Map<IEnumerable<AllClientsDto>>(entities);
             return Ok(clients);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ClientEditDto>> Get(int id)
         {
-            var entity = await dataContext.Clients.FindAsync(id);
+            using var connection = _db.CreateConnection();
+            var entity = await connection.QuerySingleOrDefaultAsync<ClientEntity>(
+                "SELECT * FROM Clients WHERE Id = @Id", new { Id = id });
 
             if (entity == null)
-            {
-                return NotFound(new { id = id });
-            }
+                return NotFound(new { id });
 
-            var client = new ClientEditDto();
-            mapper.Map(entity, client);
-
+            var client = _mapper.Map<ClientEditDto>(entity);
             return Ok(client);
         }
 
         [HttpGet("{id}/profile")]
         public async Task<ActionResult<ClientProfileDto>> GetProfile(int id)
         {
-            var entity = await dataContext.Clients.FindAsync(id);
+            using var connection = _db.CreateConnection();
+            var entities = await connection.QueryAsync<ClientEntity, CountryEntity, ShippingMethodEntity, ClientEntity>(
+                @"SELECT cl.*, co.Id, co.Name, sm.Id, sm.Name FROM Clients cl
+                  LEFT JOIN Countries co ON cl.CountryId = co.Id
+                  LEFT JOIN ShippingMethods sm ON cl.ShippingMethodId = sm.Id
+                  WHERE cl.Id = @Id",
+                (cl, co, sm) => { cl.Country = co; cl.ShippingMethod = sm; return cl; },
+                new { Id = id });
 
-            if (entity == null) {
-                return NotFound(new { id = id });
-            }
+            var entity = entities.FirstOrDefault();
+            if (entity == null)
+                return NotFound(new { id });
 
-            var client = new ClientProfileDto();
-            mapper.Map(entity, client);
-
-            client.OrdersQuantity = await dataContext.Orders.Where(o => o.ClientId == id).CountAsync();
-            client.PaymentsTotal = await dataContext.Payments.Where(p => p.ClientId == id).SumAsync(p => p.Amount);
+            var client = _mapper.Map<ClientProfileDto>(entity);
+            client.OrdersQuantity = await connection.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM Orders WHERE ClientId = @Id", new { Id = id });
+            client.PaymentsTotal = await connection.ExecuteScalarAsync<float>(
+                "SELECT COALESCE(SUM(Amount), 0) FROM Payments WHERE ClientId = @Id", new { Id = id });
 
             return Ok(client);
         }
@@ -90,35 +101,41 @@ namespace Produkty24_API.Controllers
         [HttpPost]
         public async Task<ActionResult<ClientEntity>> Create([FromBody] ClientCreateDto client)
         {
-            if (!ModelState.IsValid) {
+            if (!ModelState.IsValid)
                 return BadRequest(client);
-            }
 
-            var newClientEntity = new ClientEntity();
-            mapper.Map(client, newClientEntity);
-            newClientEntity.Date = dateTimeProvider.UtcNow;
+            using var connection = _db.CreateConnection();
+            var newEntity = new ClientEntity();
+            _mapper.Map(client, newEntity);
+            newEntity.Date = _dateTimeProvider.UtcNow;
 
-            await dataContext.Clients.AddAsync(newClientEntity);
-            await dataContext.SaveChangesAsync();
+            var id = await connection.ExecuteScalarAsync<int>(
+                @"INSERT INTO Clients (Date, Name, Nickname, Phone, Email, City, Address, PostalCode, Notes, ShippingMethodId, CountryId)
+                  VALUES (@Date, @Name, @Nickname, @Phone, @Email, @City, @Address, @PostalCode, @Notes, @ShippingMethodId, @CountryId);
+                  SELECT last_insert_rowid();", newEntity);
+            newEntity.Id = id;
 
-            return Ok(newClientEntity);
+            return Ok(newEntity);
         }
 
         [HttpPut]
         public async Task<ActionResult<ClientEntity>> Edit([FromBody] ClientEditDto client)
         {
-            if (!ModelState.IsValid) {
+            if (!ModelState.IsValid)
                 return BadRequest(client);
-            }
 
-            var entity = await dataContext.Clients.FindAsync(client.Id);
+            using var connection = _db.CreateConnection();
+            var entity = await connection.QuerySingleOrDefaultAsync<ClientEntity>(
+                "SELECT * FROM Clients WHERE Id = @Id", new { Id = client.Id });
 
-            if (entity == null) {
+            if (entity == null)
                 return NotFound(new { id = client.Id });
-            }
 
-            mapper.Map(client, entity);
-            await dataContext.SaveChangesAsync();
+            _mapper.Map(client, entity);
+            await connection.ExecuteAsync(
+                @"UPDATE Clients SET Name = @Name, Nickname = @Nickname, Phone = @Phone, Email = @Email,
+                  City = @City, Address = @Address, PostalCode = @PostalCode, Notes = @Notes,
+                  ShippingMethodId = @ShippingMethodId, CountryId = @CountryId WHERE Id = @Id", entity);
 
             return Ok(entity);
         }
@@ -126,9 +143,8 @@ namespace Produkty24_API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete([FromRoute] int id)
         {
-            dataContext.Remove(new ClientEntity() { Id = id });
-            await dataContext.SaveChangesAsync();
-
+            using var connection = _db.CreateConnection();
+            await connection.ExecuteAsync("DELETE FROM Clients WHERE Id = @Id", new { Id = id });
             return Ok(id);
         }
     }
