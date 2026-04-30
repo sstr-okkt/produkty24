@@ -63,8 +63,12 @@ namespace Produkty24_API.Controllers
 
             var order = _mapper.Map<OrderDetailsDto>(entity);
 
-            order.Items = (await connection.QueryAsync<OrderItemEntity>(
-                "SELECT * FROM OrdersItems WHERE OrderId = @OrderId", new { OrderId = id })).ToList();
+            order.Items = (await connection.QueryAsync<OrderItemEntity, StockItemEntity, OrderItemEntity>(
+                @"SELECT oi.*, si.Id, si.Name FROM OrdersItems oi
+                  LEFT JOIN StockItems si ON oi.StockItemId = si.Id
+                  WHERE oi.OrderId = @OrderId",
+                (oi, si) => { oi.StockItem = si; return oi; },
+                new { OrderId = id })).ToList();
             order.Total = (float)await connection.ExecuteScalarAsync<double>(
                 "SELECT COALESCE(SUM(Total), 0) FROM OrdersItems WHERE OrderId = @OrderId", new { OrderId = id });
             order.PaymentsTotal = await connection.ExecuteScalarAsync<float>(
