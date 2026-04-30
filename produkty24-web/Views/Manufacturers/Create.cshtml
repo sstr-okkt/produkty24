@@ -1,0 +1,39 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Produkty24_Web.ViewModels.Manufacturers
+@inject IViewLocalizer Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@{
+    ViewData["Title"] = @Localizer["Title"];
+}
+
+@model ManufacturerCreateViewModel
+
+<div class="text-center">
+    <h1 class="display-4">@Localizer["Title"]</h1>
+
+    <div class="text-align-left ">
+        <a class="btn btn-outline-secondary" asp-action="Index">@SharedLocalizer["BackToManufacturers"]</a>
+    </div>
+    <br>
+
+    <form class="text-align-left" asp-antiforgery="true" asp-action="Create" asp-controller="Manufacturers">
+        <div>
+            <div class="validation" asp-validation-summary="ModelOnly"></div>
+            <div class="form-group">
+                <label asp-for="Name">* @SharedLocalizer["Name"]</label>
+                <input class="form-control" type="text" asp-for="Name" />
+                <span class="color-red" asp-validation-for="Name"></span>
+            </div>            
+            <div class="form-group text-align-right">
+                <input class="btn btn-primary" type="submit" value="@SharedLocalizer["Create"]" />                
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts{
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+}

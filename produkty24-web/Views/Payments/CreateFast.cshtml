@@ -1,0 +1,46 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Produkty24_Web.ViewModels.Payments
+@inject IViewLocalizer Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@{
+    ViewData["Title"] = @SharedLocalizer["NewPayment"];
+}
+
+@model PaymentCreateViewModel
+
+<div class="text-center">
+    <h1 class="display-4">@SharedLocalizer["NewPayment"]</h1>
+
+    <div class="text-align-left ">
+        <a class="btn btn-outline-secondary" asp-route-orderId="@Model.OrderId" asp-controller="Orders" asp-action="Edit">@SharedLocalizer["BackToOrder"]</a>
+    </div>
+    <br>
+
+    <form class="text-align-left" asp-antiforgery="true" asp-action="CreateFast" asp-controller="Payments">
+        <div>
+            <div class="validation" asp-validation-summary="ModelOnly"></div>
+            <div class="form-group">
+                <label asp-for="Amount">* @SharedLocalizer["Amount"]</label>
+                <input class="form-control" type="text" asp-for="Amount" />
+                <span class="color-red" asp-validation-for="Amount"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Notes">@SharedLocalizer["Notes"]</label>
+                <input class="form-control" type="text" asp-for="Notes" />
+                <span class="color-red" asp-validation-for="Notes"></span>
+            </div>
+            <div class="form-group text-align-right">
+                <input hidden asp-for="ClientId" />
+                <input hidden asp-for="OrderId" />
+                <input class="btn btn-primary" type="submit" value="@SharedLocalizer["Create"]" />
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts{
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+    }

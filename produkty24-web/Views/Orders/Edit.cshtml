@@ -1,0 +1,162 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Produkty24_Web.Models.Entities
+@using Produkty24_Web.ViewModels
+@using Produkty24_Web.ViewModels.Orders
+@inject IViewLocalizer Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@{
+    ViewData["Title"] = @Localizer["Title"];
+    int orderItemPosition = 1;
+}
+
+@model OrderEditViewModel
+
+<div class="text-center">
+    <h1 class="display-4">@Localizer["Title"]</h1>
+
+    <div class="text-align-left margin-bottom-5">
+        <a class="btn btn-outline-secondary" asp-controller="Orders" asp-action="Index">@SharedLocalizer["BackToOrders"]</a>
+    </div>
+
+    <table class="table vertical-align-center">
+        <thead class="thead-light">
+            <tr class="table-primary">
+                <th scope="col">Id</th>
+                <th scope="col">@SharedLocalizer["Added"]</th>
+                <th scope="col">@SharedLocalizer["Client"]</th>
+                <th scope="col">@SharedLocalizer["Status"]</th>
+                <th scope="col">@SharedLocalizer["Notes"]</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <form asp-antiforgery="true" asp-action="Edit" asp-controller="Orders">
+                <div>
+                    <tr class="text-vertical-align">
+                        <td>
+                            <label asp-for="Id">@Model.Id</label>
+                            <input hidden asp-for="Id" />
+                        </td>
+                        <td>
+                            <label asp-for="Date">@Model.Date</label>
+                            <input hidden asp-for="Date" />
+                        </td>
+                        <td>
+                            <label asp-for="Client">@Model.Client.Name</label>
+                            <input hidden asp-for="ClientId" />
+                        </td>
+                        <td>
+                            <select class="form-select" asp-for="StatusId">
+                                @foreach (var status in ViewBag.Statuses)
+                                {
+                                <option value="@status.Id">@status.Name</option>
+                                }
+                            </select>
+                        </td>
+                        <td>
+                            <input class="form-control" asp-for="Notes" />
+                            <span class="color-red" asp-validation-for="Notes"></span>
+                        </td>
+                        <td style="text-align: right;">
+                            <a class="btn btn-outline-secondary" asp-route-id="@Model.Id" asp-controller="Payments" asp-action="CreateFast">@SharedLocalizer["NewPayment"]</a>
+                            <input class="btn btn-success" type="submit" value="@SharedLocalizer["Save"]" />
+                        </td>
+                    </tr>
+                </div>
+            </form>           
+        </tbody>
+    </table>
+
+    <div class="text-align-left">
+        <h4>К оплате: @Model.Total</h4>
+        <h4>Оплачено: @Model.PaymentsTotal</h4>
+        <h4>Долг: @Model.Debt</h4>
+    </div>    
+    <br>
+
+    <div class="text-align-left margin-bottom-5">
+    <a class="btn btn-primary text-align-left" asp-route-id="@Model.Id" asp-controller="OrdersItems" asp-action="Create">@Localizer["AddItem"]</a>
+    </div>
+
+    <table class="table">
+        <thead class="thead-light">
+            <tr class="table-primary">
+                <th scope="col">№</th>
+                <th scope="col">@SharedLocalizer["StockItemName"]</th>
+                <th scope="col">@SharedLocalizer["Price"]</th>
+                <th scope="col">@SharedLocalizer["Quantity"]</th>
+                <th scope="col">@SharedLocalizer["Discount"]</th>
+                <th scope="col">@SharedLocalizer["Total"]</th>
+                <th scope="col">@SharedLocalizer["Profit"]</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>            
+            @foreach (var item in Model.Items) {
+                <tr>
+                    <td>@(orderItemPosition++)</td>
+                    <td>@item.StockItem.Name</td>
+                    <td>@item.Price</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Discount</td>
+                    <td>@item.Total</td>
+                    <td>@item.Profit</td>
+                    <td class="text-align-right">
+                        <a class="btn btn-outline-secondary btn-sm" asp-route-id="@item.Id" asp-controller="OrdersItems" asp-action="Edit">@SharedLocalizer["Edit"]</a>
+
+                        <button type="button" id="modalButton" class="btn btn-outline-danger btn-sm" data-item-id="@item.Id" data-item-name="@item.StockItem.Name" data-bs-toggle="modal" data-bs-target="#deletionModal">
+                            @SharedLocalizer["Delete"]
+                        </button>
+                    </td>
+                </tr>
+            }            
+        </tbody>
+    </table>
+
+    <div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">@SharedLocalizer["ConfirmDeletion"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p style="text-align:left" class="modal-body-message"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    @using (Html.BeginForm(FormMethod.Post))
+                    {
+                        <input class="item-id" type="hidden" name="id" />
+                        <input class="btn btn-danger" type="submit" value="@SharedLocalizer["Delete"]" asp-controller="OrdersItems" asp-action="Delete" />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    @{
+    <partial name="_ValidationScriptsPartial" />
+    }
+
+    <script type="text/javascript">
+        let item = {
+            localized: '@SharedLocalizer["Item"]'
+        }
+        let deletePermanently = {
+            localized: '@SharedLocalizer["DeletePermanently"]'
+        }
+
+        $('#deletionModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget)
+            var itemId = button.data('item-id')
+            var itemName = button.data('item-name')
+            var modal = $(this)
+            modal.find('.modal-body-message').text(item.localized + ': ' + itemName + '. ' + deletePermanently.localized + '?')
+            modal.find('.item-id').val(itemId)
+        })
+    </script>
+}

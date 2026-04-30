@@ -1,0 +1,135 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Produkty24_Web.Models.Entities
+@inject IViewLocalizer Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@{
+    ViewData["Title"] = @Localizer["Title"];
+}
+
+@model Produkty24_Web.Models.PageInfo<ManufacturerEntity>
+
+@*Manufacturers/Index*@
+<div class="text-center">
+    <h2 class="display-4">@Localizer["Title"]</h2>
+    <div class="text-align-left margin-bottom-5">
+        <a class="btn btn-outline-secondary" asp-controller="StockItems" asp-action="Index">@SharedLocalizer["BackToStock"]</a>
+        <a class="btn btn-primary" asp-action="Create">@SharedLocalizer["Create"]</a>
+    </div>
+
+    <table class="table table-striped width-50">
+        <thead class="thead-light">
+            <tr class="table-primary">
+                <th scope="col">Id</th>
+                <th scope="col">@SharedLocalizer["Manufacturer"]</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var manufacturer in Model.Items)
+            {
+                <tr>
+                    <td>@manufacturer.Id</td>
+                    <td>@manufacturer.Name</td>
+                    <td style="text-align: right;">
+                        @using (Html.BeginForm(FormMethod.Post))
+                        {
+                        <a class="btn btn-outline-secondary btn-sm" asp-route-id="@manufacturer.Id" asp-action="Edit">@SharedLocalizer["Edit"]</a>
+
+                            <button type="button" id="deleteManufacturerModalButton" class="btn btn-outline-danger btn-sm" data-manufacturer-id="@manufacturer.Id" data-manufacturer-name="@manufacturer.Name" data-bs-toggle="modal" data-bs-target="#deleteManufacturerModal">
+                                @SharedLocalizer["Delete"]
+                        </button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (Model.HasPreviousPage)
+    {
+        <a asp-action="Index"
+       asp-route-page="@(Model.CurrentPage - 1)"
+       class="btn btn-outline-dark">
+            @SharedLocalizer["Previous"]
+        </a>
+    }
+    @if (Model.HasNextPage)
+    {
+        <a asp-action="Index"
+       asp-route-page="@(Model.CurrentPage + 1)"
+       class="btn btn-outline-dark">
+            @SharedLocalizer["Next"]
+        </a>
+    }
+
+    @*Add manufacturer*@
+    <div class="modal fade" id="addManufacturerModal" tabindex="-1" aria-labelledby="addManufacturerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addManufacturerModalLabel">@Localizer["NewManufacturer"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form class="text-align-left" asp-antiforgery="true" asp-action="Create" asp-controller="Manufacturers">
+                    <div class="modal-body">                   
+                        <div>
+                            <div>
+                                <label>* @Localizer["EnterName"]</label>
+                                <input class="form-control" type="text" name="manufacturerName" />                               
+                            </div>                       
+                        </div>                                     
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+
+                        <input class="client-id" type="hidden" name="id" />
+                        <input class="btn btn-primary" type="submit" value="@SharedLocalizer["Create"]" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteManufacturerModal" tabindex="-1" aria-labelledby="deleteManufacturerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteManufacturerModalLabel">@SharedLocalizer["ConfirmDeletion"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p style="text-align:left" class="modal-body-message"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    @using (Html.BeginForm(FormMethod.Post))
+                    {
+                        <input class="manufacturer-id" type="hidden" name="id" />
+                        <input class="btn btn-danger" type="submit" value="@SharedLocalizer["Delete"]" asp-action="Delete" />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script type="text/javascript">
+        let manufacturer = {
+            localized: '@SharedLocalizer["Manufacturer"]'
+        }
+        let deletePermanently = {
+            localized: '@SharedLocalizer["DeletePermanently"]'
+        }
+
+        $('#deleteManufacturerModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget)
+            var manufacturerId = button.data('manufacturer-id')
+            var manufacturerName = button.data('manufacturer-name')
+            var modal = $(this)
+            modal.find('.modal-body-message').text(manufacturer.localized + ': ' + manufacturerName + '. ' + deletePermanently.localized + '?')
+            modal.find('.manufacturer-id').val(manufacturerId)
+        })
+    </script>
+}

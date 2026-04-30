@@ -1,0 +1,59 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Produkty24_Web.ViewModels.OrdersItems
+@inject IViewLocalizer Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@{
+    ViewData["Title"] = @Localizer["Title"].Value;
+}
+
+@model Produkty24_Web.Models.PageInfo<OrderItemViewModel>
+
+<div class="text-center">
+    <h2 class="display-4">@Localizer["Title"]</h2>
+
+    <div class="text-align-left margin-bottom-5">
+        <a class="btn btn-outline-secondary" asp-controller="Orders" asp-action="Index">@SharedLocalizer["BackToOrders"]</a>
+    </div>
+
+    <table class="table table-striped">
+        <thead class="thead-light">
+            <tr class="table-primary">
+                <th scope="col">Id</th>
+                <th scope="col">@SharedLocalizer["StockItemName"]</th>
+                <th scope="col">@SharedLocalizer["Quantity"]</th>
+                <th scope="col">@SharedLocalizer["Client"]</th>
+                <th scope="col">@SharedLocalizer["Order"]</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var orderItem in Model.Items)
+            {
+                <tr>
+                    <td>@orderItem.Id</td>
+                    <td>@orderItem.StockItem.Name</td>
+                    <td>@orderItem.Quantity</td>
+                    <td>@orderItem.Order.Client.Name</td>
+                    <td><a asp-route-id="@orderItem.Order.Id" asp-controller="Orders" asp-action="Edit">@orderItem.Order.Id</a></td>
+                </tr>
+            }
+        </tbody>       
+    </table>
+
+    @if (Model.HasPreviousPage)
+    {
+            <a asp-action="Index"
+       asp-route-page="@(Model.CurrentPage - 1)"
+       class="btn btn-outline-dark">
+            @SharedLocalizer["Previous"]
+            </a>
+    }
+    @if (Model.HasNextPage)
+    {
+            <a asp-action="Index"
+       asp-route-page="@(Model.CurrentPage + 1)"
+       class="btn btn-outline-dark">
+            @SharedLocalizer["Next"]
+            </a>
+    }    
+</div>

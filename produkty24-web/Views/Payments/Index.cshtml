@@ -1,0 +1,122 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Produkty24_Web.Models.Entities
+@using Produkty24_Web.ViewModels
+@using Produkty24_Web.ViewModels.Payments
+@inject IViewLocalizer Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@{
+    ViewData["Title"] = @SharedLocalizer["Payments"];
+}
+
+@model Produkty24_Web.Models.PageInfo<PaymentViewModel>
+
+<div class="text-center">
+    <h2 class="display-4">@SharedLocalizer["Payments"]</h2>
+    <div class="text-align-left margin-bottom-5">
+        <a class="btn btn-outline-secondary" asp-controller="Clients" asp-action="Index">@SharedLocalizer["BackToClients"]</a>
+    </div>
+
+    <table class="table table-striped">
+        <thead class="thead-light">
+            <tr class="table-primary">
+                <th scope="col">Id</th>
+                <th scope="col">@SharedLocalizer["Added"]</th>
+                <th scope="col">@SharedLocalizer["Client"]</th>
+                <th scope="col">@SharedLocalizer["Order"]</th>
+                <th scope="col">@SharedLocalizer["Amount"]</th>
+                <th scope="col">@SharedLocalizer["Notes"]</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var payment in Model.Items)
+            {
+                    <tr>
+                        <td>@payment.Id</td>
+                        <td>@payment.Date</td>
+                        <td>
+                            @if (payment.Client != null)
+                            {
+                                @payment.Client.Name
+                            }
+                        </td>
+                        <td>
+                            @if (payment.Order != null)
+                            {
+                                <a asp-route-id="@payment.Order.Id" asp-controller="Orders" asp-action="Edit">@payment.Order.Id</a>
+                            }
+                        </td>
+                        <td>@payment.Amount</td>
+                        <td>@payment.Notes</td>
+                        <td style="text-align: right;">
+                            <a class="btn btn-outline-secondary btn-sm" asp-route-id="@payment.Id" asp-action="Edit">@SharedLocalizer["Edit"]</a>
+
+                        <button type="button" id="modalButton" class="btn btn-outline-danger btn-sm" data-payment-id="@payment.Id" data-payment-date="@payment.Date" data-bs-toggle="modal" data-bs-target="#deletionModal">
+                            @SharedLocalizer["Delete"]
+                            </button>
+                        </td>
+                    </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (Model.HasPreviousPage)
+    {
+            <a asp-action="Index"
+       asp-route-page="@(Model.CurrentPage - 1)"
+       class="btn btn-outline-dark">
+            @SharedLocalizer["Previous"]
+            </a>
+    }
+    @if (Model.HasNextPage)
+    {
+            <a asp-action="Index"
+       asp-route-page="@(Model.CurrentPage + 1)"
+       class="btn btn-outline-dark">
+            @SharedLocalizer["Next"]
+            </a>
+    }
+
+    <div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">@SharedLocalizer["ConfirmDeletion"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p style="text-align:left" class="modal-body-message"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    @using (Html.BeginForm(FormMethod.Post))
+                    {
+                            <input class="payment-id" type="hidden" name="id" />
+                            <input class="btn btn-danger" type="submit" value="@SharedLocalizer["Delete"]" asp-action="Delete" />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+        <script type="text/javascript">
+            let payment = {
+                localized: '@SharedLocalizer["Payment"]'
+            }
+            let deletePermanently = {
+                localized: '@SharedLocalizer["DeletePermanently"]'
+            }
+
+            $('#deletionModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget)
+                var paymentId = button.data('payment-id')
+                var paymentDate = button.data('payment-date')
+                var modal = $(this)
+                modal.find('.modal-body-message').text(payment.localized + ' №' + paymentId + ' (' + paymentDate + '). ' + deletePermanently.localized + '?')
+                modal.find('.payment-id').val(paymentId)
+            })
+        </script>
+}

@@ -1,0 +1,108 @@
+@using Microsoft.AspNetCore.Builder
+@using Microsoft.AspNetCore.Localization
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.Extensions.Options
+
+@inject IViewLocalizer Localizer
+@inject IOptions<RequestLocalizationOptions> LocOptions
+
+@{
+    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+    var cultureItems = LocOptions.Value.SupportedUICultures
+        .Select(c => new SelectListItem { Value = c.Name, Text = c.NativeName })
+        .ToList();
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Produkty24-Web</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Produkty24_Web.styles.css" asp-append-version="true" />    
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Clients" asp-action="Index">Produkty24-Web</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <ul class="nav">
+                                <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    @Localizer["Clients"]
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <li><a class="dropdown-item" asp-controller="Clients" asp-action="Index">@Localizer["ClientsList"]</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Clients" asp-action="Create">@Localizer["AddClient"]</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="Payments" asp-action="Index">@Localizer["Payments"]</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    @Localizer["Orders"]
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <li><a class="dropdown-item" asp-controller="Orders" asp-action="Index">@Localizer["OrdersList"]</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Orders" asp-action="Create">@Localizer["CreateOrder"]</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="OrdersItems" asp-action="Index">@Localizer["ItemsInOrders"]</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    @Localizer["Stock"]
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <li><a class="dropdown-item" asp-controller="StockItems" asp-action="Index">@Localizer["StockItems"]</a></li>
+                                    <li><a class="dropdown-item" asp-controller="StockItems" asp-action="Create">@Localizer["AddStockItem"]</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="StockArrivals" asp-action="Index">@Localizer["StockArrivals"]</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Manufacturers" asp-action="Index">@Localizer["Manufacturers"]</a></li>
+                                    <li><a class="dropdown-item" asp-controller="ExchangeRates" asp-action="Index">@Localizer["ExchangeRates"]</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    }                                       
+                </div>
+                <form asp-controller="Clients" asp-action="SetLanguage" asp-route-returnUrl="@Context.Request.Path" method="post" class="form-inline">
+                <label class="sr-only" for="langSelector">@Localizer["Language"]:</label>
+                    <select id="langSelector" class="form-select inline auto-width" name="culture" onchange="this.form.submit();"
+                                                    asp-for="@requestCulture.RequestCulture.UICulture.Name"
+                                                    asp-items="cultureItems"></select>
+                </form>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <form method="post" asp-controller="Account" asp-action="Logout" style="margin: 0px 0px 0px 5px">
+                        <input class="btn btn-warning" type="submit" value="@Localizer["LogOut"]" />
+                    </form>
+                }
+            </div>
+        </nav>
+    </header>
+    <div class="container">       
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy;2022 - Produkty24-Web
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)  
+</body>
+</html>

@@ -1,0 +1,73 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Produkty24_Web.ViewModels.StockItems
+@inject IViewLocalizer Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@{
+    ViewData["Title"] = @Localizer["Title"];
+}
+
+@model StockItemCreateViewModel
+
+<div class="text-center">
+    <h1 class="display-4">@Localizer["Title"]</h1>
+
+    <div class="text-align-left">
+        <a class="btn btn-outline-secondary" asp-controller="StockItems" asp-action="Index">@SharedLocalizer["BackToStock"]</a>
+    </div>
+    <br>
+
+    <form class="text-align-left" asp-antiforgery="true" asp-action="Create" asp-controller="StockItems">
+        <div>
+            <div class="form-group">
+                <label asp-for="Name">* @SharedLocalizer["StockItemName"]</label>
+                <input class="form-control" type="text" asp-for="Name" />
+                <span class="color-red" asp-validation-for="Name"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ManufacturerId">@SharedLocalizer["Manufacturer"]</label>
+                <select class="form-select" asp-for="ManufacturerId">
+                    <option selected value="">@SharedLocalizer["Select"]</option>
+                    @foreach (var manufacturer in ViewBag.Manufacturers)
+                    {
+                        <option value="@manufacturer.Id">@manufacturer.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description">@SharedLocalizer["Description"]</label>
+                <textarea class="form-control" asp-for="Description" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label asp-for="CurrencyId">* @SharedLocalizer["Currency"]</label>
+                <select class="form-select" asp-for="CurrencyId">
+                    <option selected value="-1">@SharedLocalizer["Select"]</option>
+                    @foreach (var currency in ViewBag.Currencies)
+                    {
+                        <option value="@currency.Id">@currency.Code</option>
+                    }
+                </select>
+                <span class="color-red" asp-validation-for="CurrencyId"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="PurchasePrice">* @SharedLocalizer["PurchasePrice"]</label>
+                <input class="form-control" type="text" asp-for="PurchasePrice" />
+                <span class="color-red" asp-validation-for="PurchasePrice"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="RetailPrice">* @SharedLocalizer["RetailPrice"]</label>
+                <input class="form-control" type="text" asp-for="RetailPrice" />
+                <span class="color-red" asp-validation-for="RetailPrice"></span>
+            </div>            
+            <div class="form-group text-align-right">
+                <input class="btn btn-primary" type="submit" value="@SharedLocalizer["Create"]" />
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts{
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+}

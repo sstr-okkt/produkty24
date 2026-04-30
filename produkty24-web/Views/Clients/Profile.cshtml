@@ -1,0 +1,152 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@{
+    ViewData["Title"] = @SharedLocalizer["TitleClientProfile"];
+}
+
+@model Produkty24_Web.ViewModels.Clients.ClientProfileViewModel
+
+<div class="text-center">
+    <h2 class="display-4">@SharedLocalizer["TitleClientProfile"]</h2>
+    <div class="text-align-left margin-bottom-5">
+        <a class="btn btn-outline-secondary" asp-controller="Clients" asp-action="Index">@SharedLocalizer["BackToClients"]</a>
+    </div>
+
+    <table class="table table-sm width-50">
+        <thead class="thead-light">
+            <tr class="table-primary">
+                <th scope="col">@SharedLocalizer["Description"]</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>@Model.Id</td>
+            </tr>
+            <tr>
+                <th>@SharedLocalizer["Added"]</th>
+                <td>@Model.Date</td>
+            </tr>
+            <tr>
+                <th>@SharedLocalizer["Name"]</th>
+                <td>@Model.Name</td>
+            </tr>
+            <tr>
+                <th>@SharedLocalizer["Nickname"]</th>
+                <td>@Model.Nickname</td>
+            </tr>
+            <tr>
+                <th>@SharedLocalizer["Phone"]</th>
+                <td>@Model.Phone</td>
+            </tr>
+            <tr>
+                <th>@SharedLocalizer["Email"]</th>
+                <td>@Model.Email</td>
+            </tr>
+            <tr>
+                <th>@SharedLocalizer["Country"]</th>
+                <td>
+                    @if (Model.Country != null)
+                    {
+                        @Model.Country.Name
+                    }                    
+                </td>
+            </tr>
+            <tr>
+                <th>@SharedLocalizer["City"]</th>
+                <td>@Model.City</td>
+            </tr>
+            <tr>
+                <th>@SharedLocalizer["Address"]</th>
+                <td>@Model.Address</td>
+            </tr>
+            <tr>
+                <th>@SharedLocalizer["ShippingMethod"]</th>
+                <td>
+                    @if (Model.ShippingMethod != null)
+                    {
+                        @Model.ShippingMethod.Name
+                    }   
+                </td>
+            </tr>
+            <tr>
+                <th>@SharedLocalizer["PostalCode"]</th>
+                <td>@Model.PostalCode</td>
+            </tr>
+            <tr>
+                <th>@SharedLocalizer["Notes"]</th>
+                <td>@Model.Notes</td>
+            </tr>
+            <tr>
+                <th>@SharedLocalizer["OrdersQuantity"]</th>
+                <td>@Model.OrdersQuantity</td>
+            </tr>
+            <tr>
+                <th>@SharedLocalizer["PaymentsTotal"]</th>
+                <td>@Model.PaymentsTotal</td>
+            </tr>
+        </tbody>       
+    </table>
+
+@*    @if (Model.HasPreviousPage)
+    {
+            <a asp-action="Index"
+       asp-route-page="@(Model.CurrentPage - 1)"
+       class="btn btn-outline-dark">
+            @SharedLocalizer["Previous"]
+            </a>
+    }
+    @if (Model.HasNextPage)
+    {
+            <a asp-action="Index"
+       asp-route-page="@(Model.CurrentPage + 1)"
+       class="btn btn-outline-dark">
+            @SharedLocalizer["Next"]
+            </a>
+    }*@
+
+    @*<div class="modal fade" id="deletionModal" tabindex="-1" aria-labelledby="deletionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">@SharedLocalizer["ConfirmDeletion"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p style="text-align:left" class="modal-body-message"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    @using (Html.BeginForm(FormMethod.Post))
+                    {
+                            <input class="client-id" type="hidden" name="id" />
+                            <input class="btn btn-danger" type="submit" value="@SharedLocalizer["Delete"]" asp-action="Delete" />
+                    }                                      
+                </div>
+            </div>
+        </div>
+    </div>*@   
+</div>
+
+@section Scripts{
+        <script type="text/javascript">
+            let client = {
+                localized: '@SharedLocalizer["Client"]'
+            }
+            let deletePermanently = {
+                localized: '@SharedLocalizer["DeletePermanently"]'
+            }
+
+            $('#deletionModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget)
+                var clientId = button.data('client-id')
+                var clientName = button.data('client-name')
+                var modal = $(this)
+                modal.find('.modal-body-message').text(client.localized + ': ' + clientName + '. ' + deletePermanently.localized + '?')
+                modal.find('.client-id').val(clientId)
+            })
+        </script>
+}

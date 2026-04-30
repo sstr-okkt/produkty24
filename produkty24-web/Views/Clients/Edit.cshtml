@@ -1,0 +1,92 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Produkty24_Web.ViewModels.Clients
+@inject IViewLocalizer Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+
+@{
+    ViewData["Title"] = @Localizer["Title"];
+}
+@model ClientEditViewModel
+
+<div class="text-center">
+    <h1 class="display-4">@Localizer["Title"]</h1>
+
+    <div class="text-align-left">
+        <a class="btn btn-outline-secondary" asp-controller="Clients" asp-action="Index">@SharedLocalizer["BackToClients"]</a>
+    </div>
+    <br>
+
+    <form class="text-align-left" asp-antiforgery="true" asp-action="Edit" asp-controller="Clients">
+        <div>
+            <div class="form-group">
+                <label asp-for="Name">* @SharedLocalizer["Name"]</label>
+                <input class="form-control" type="text" asp-for="Name" />
+                <span class="color-red" asp-validation-for="Name"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Nickname">@SharedLocalizer["Nickname"]</label>
+                <input class="form-control" type="text" asp-for="Nickname" />
+                <span class="color-red" asp-validation-for="Nickname"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Phone">@SharedLocalizer["Phone"]</label>
+                <input class="form-control" type="text" asp-for="Phone" />
+                <span class="color-red" asp-validation-for="Phone"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email">Email</label>
+                <input class="form-control" type="text" asp-for="Email" />
+                <span class="color-red" asp-validation-for="Email"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CountryId">@SharedLocalizer["Country"]</label>
+                <select class="form-select" asp-for="CountryId">
+                    <option value="">@SharedLocalizer["Select"]</option>
+                    @foreach (var country in ViewBag.Countries)
+                    {
+                        <option value="@country.Id">@country.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="City">@SharedLocalizer["City"]</label>
+                <input class="form-control" type="text" asp-for="City" />
+                <span class="color-red" asp-validation-for="City"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Address">@SharedLocalizer["Address"]</label>
+                <input class="form-control" type="text" asp-for="Address" />
+                <span class="color-red" asp-validation-for="Address"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ShippingMethodId">@SharedLocalizer["ShippingMethod"]</label>
+                <select class="form-select" asp-for="ShippingMethodId">
+                    <option value="">@SharedLocalizer["Select"]</option>
+                    @foreach (var shippingMethod in ViewBag.ShippingMethods)
+                    {
+                        <option value="@shippingMethod.Id">@shippingMethod.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="PostalCode">@SharedLocalizer["PostalCode"]</label>
+                <input class="form-control" type="text" asp-for="PostalCode" />
+                <span class="color-red" asp-validation-for="PostalCode"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Notes">@SharedLocalizer["Notes"]</label>
+                <input class="form-control" type="text" asp-for="Notes" />
+                <span class="color-red" asp-validation-for="Notes"></span>
+            </div>
+            <div class="form-group text-align-right">
+                <input class="btn btn-primary" type="submit" value="@SharedLocalizer["Save"]" />
+            </div>
+        </div>
+    </form>    
+</div>
+
+@section Scripts{
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+}
