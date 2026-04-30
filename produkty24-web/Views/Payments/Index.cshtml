@@ -47,7 +47,7 @@
                                 <a asp-route-id="@payment.Order.Id" asp-controller="Orders" asp-action="Edit">@payment.Order.Id</a>
                             }
                         </td>
-                        <td>@payment.Amount</td>
+                        <td>@payment.Amount.ToString("0.##")</td>
                         <td>@payment.Notes</td>
                         <td style="text-align: right;">
                             <a class="btn btn-outline-secondary btn-sm" asp-route-id="@payment.Id" asp-action="Edit">@SharedLocalizer["Edit"]</a>

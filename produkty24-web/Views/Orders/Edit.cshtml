@@ -69,9 +69,9 @@
     </table>
 
     <div class="text-align-left">
-        <h4>К оплате: @Model.Total</h4>
-        <h4>Оплачено: @Model.PaymentsTotal</h4>
-        <h4>Долг: @Model.Debt</h4>
+        <h4>К оплате: @Model.Total.ToString("0.##")</h4>
+        <h4>Оплачено: @Model.PaymentsTotal.ToString("0.##")</h4>
+        <h4>Долг: @Model.Debt.ToString("0.##")</h4>
     </div>    
     <br>
 
@@ -97,11 +97,11 @@
                 <tr>
                     <td>@(orderItemPosition++)</td>
                     <td>@item.StockItem.Name</td>
-                    <td>@item.Price</td>
-                    <td>@item.Quantity</td>
+                    <td>@item.Price?.ToString("0.##")</td>
+                    <td>@item.Quantity.ToString("0.##")</td>
                     <td>@item.Discount</td>
-                    <td>@item.Total</td>
-                    <td>@item.Profit</td>
+                    <td>@item.Total?.ToString("0.##")</td>
+                    <td>@item.Profit?.ToString("0.##")</td>
                     <td class="text-align-right">
                         <a class="btn btn-outline-secondary btn-sm" asp-route-id="@item.Id" asp-controller="OrdersItems" asp-action="Edit">@SharedLocalizer["Edit"]</a>
 

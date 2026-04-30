@@ -32,7 +32,7 @@
                 <tr>
                     <td>@orderItem.Id</td>
                     <td>@orderItem.StockItem.Name</td>
-                    <td>@orderItem.Quantity</td>
+                    <td>@orderItem.Quantity.ToString("0.##")</td>
                     <td>@orderItem.Order.Client.Name</td>
                     <td><a asp-route-id="@orderItem.Order.Id" asp-controller="Orders" asp-action="Edit">@orderItem.Order.Id</a></td>
                 </tr>

@@ -51,9 +51,9 @@
                             @stockItem.Currency.Code
                         }
                     </td>
-                    <td>@stockItem.PurchasePrice</td>
-                    <td>@stockItem.RetailPrice</td>
-                    <td>@stockItem.Quantity</td>
+                    <td>@stockItem.PurchasePrice.ToString("0.##")</td>
+                    <td>@stockItem.RetailPrice.ToString("0.##")</td>
+                    <td>@stockItem.Quantity.ToString("0.##")</td>
                     <td style="text-align: right;">
                         @using (Html.BeginForm(FormMethod.Post))
                         {

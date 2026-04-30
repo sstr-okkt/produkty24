@@ -38,7 +38,7 @@
                             @stockArrival.StockItem.Name
                         }
                     </td>
-                    <td>@stockArrival.Quantity</td>
+                    <td>@stockArrival.Quantity.ToString("0.##")</td>
                     <td style="text-align: right;">
                         @using (Html.BeginForm(FormMethod.Post))
                         {

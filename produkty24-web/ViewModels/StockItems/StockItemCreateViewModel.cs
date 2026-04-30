@@ -17,10 +17,12 @@ namespace Produkty24_Web.ViewModels.StockItems
 
         [Required(ErrorMessage = "Required")]
         [Range(0.01, float.MaxValue, ErrorMessage = "PositiveValuesOnly")]
+        [DisplayFormat(DataFormatString = "{0:0.##}", ApplyFormatInEditMode = true)]
         public float PurchasePrice { get; set; }
 
         [Required(ErrorMessage = "Required")]
         [Range(0.01, float.MaxValue, ErrorMessage = "PositiveValuesOnly")]
+        [DisplayFormat(DataFormatString = "{0:0.##}", ApplyFormatInEditMode = true)]
         public float RetailPrice { get; set; }
     }
 }
