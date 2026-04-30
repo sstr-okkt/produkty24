@@ -1,0 +1,73 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild/
+bld/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+[Tt]est[Rr]esult*/
+[Dd]ebugPublicKey/
+*.VisualState.xml
+*.e2e
+
+# NuGet
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nupkg
+**/packages/repositories.config
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# .NET
+*.pidb
+*.svclog
+*.scc
+
+# OS files
+[Tt]humbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# User-specific files
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+
+# Publish output
+*.Publish.xml
+PublishScripts/
+publish/
+
+# SQLite databases
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Log files
+*.log
+
+# ASP.NET
+ScaffoldingReadMe.txt
+
+# Secrets
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
