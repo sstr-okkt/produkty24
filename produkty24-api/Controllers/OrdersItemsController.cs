@@ -34,12 +34,13 @@ namespace Produkty24_API.Controllers
             if (page < 1 || page > totalPages)
                 return NotFound(new { Message = $"Page {page} does not exist! Total pages: {totalPages}" });
 
-            var entities = await connection.QueryAsync<OrderItemEntity, OrderEntity, StockItemEntity, OrderItemEntity>(
-                @"SELECT oi.*, o.Id, o.Date, si.Id, si.Name FROM OrdersItems oi
+            var entities = await connection.QueryAsync<OrderItemEntity, OrderEntity, ClientEntity, StockItemEntity, OrderItemEntity>(
+                @"SELECT oi.*, o.Id, o.Date, o.ClientId, cl.Id, cl.Name, si.Id, si.Name FROM OrdersItems oi
                   LEFT JOIN Orders o ON oi.OrderId = o.Id
+                  LEFT JOIN Clients cl ON o.ClientId = cl.Id
                   LEFT JOIN StockItems si ON oi.StockItemId = si.Id
                   LIMIT @PageSize OFFSET @Offset",
-                (oi, o, si) => { oi.Order = o; oi.StockItem = si; return oi; },
+                (oi, o, cl, si) => { o.Client = cl; oi.Order = o; oi.StockItem = si; return oi; },
                 new { PageSize = pageSize, Offset = (page - 1) * pageSize });
 
             var ordersItems = _mapper.Map<List<AllOrderItemsDto>>(entities.ToList());
