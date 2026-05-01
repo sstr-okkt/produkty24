@@ -6,6 +6,7 @@ using Produkty24_Web.ViewModels.OrdersItems;
 using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
 using Produkty24_Web.Extensions;
+using System.Globalization;
 
 namespace Produkty24_Web.Controllers
 {
@@ -51,6 +52,8 @@ namespace Produkty24_Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([FromForm] OrderItemCreateViewModel orderItem)
         {
+            NormalizeOrderItemNumbers(orderItem);
+
             if (!ModelState.IsValid) {
                 await SetAllStockItemsListToViewBagAsync();
 
@@ -97,6 +100,8 @@ namespace Produkty24_Web.Controllers
                 return BadRequest();
             }
 
+            NormalizeOrderItemNumbers(orderItem);
+
             if (!ModelState.IsValid) {
                 await SetAllStockItemsListToViewBagAsync();
 
@@ -140,6 +145,34 @@ namespace Produkty24_Web.Controllers
             }
 
             ViewBag.StockItems = stockItems;
+        }
+
+        private void NormalizeOrderItemNumbers(OrderItemCreateViewModel orderItem)
+        {
+            TryAssignFloat(nameof(orderItem.Quantity), value => orderItem.Quantity = value);
+            TryAssignFloat(nameof(orderItem.Discount), value => orderItem.Discount = value);
+        }
+
+        private void TryAssignFloat(string fieldName, Action<float> assign)
+        {
+            var rawValue = Request.Form[fieldName].ToString();
+            if (string.IsNullOrWhiteSpace(rawValue))
+            {
+                return;
+            }
+
+            if (float.TryParse(rawValue, NumberStyles.Float, CultureInfo.InvariantCulture, out var invariantValue))
+            {
+                assign(invariantValue);
+                ModelState.Remove(fieldName);
+                return;
+            }
+
+            if (float.TryParse(rawValue, NumberStyles.Float, new CultureInfo("ru-RU"), out var ruValue))
+            {
+                assign(ruValue);
+                ModelState.Remove(fieldName);
+            }
         }
     }
 }

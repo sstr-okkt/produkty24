@@ -1,2 +1,41 @@
 ﻿<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
 <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+<script>
+    function normalizeNumber(value) {
+        return value.replace(',', '.');
+    }
+
+    $.validator.methods.number = function (value, element) {
+        if (this.optional(element)) {
+            return true;
+        }
+
+        var normalized = normalizeNumber(value);
+        return !isNaN(normalized) && !isNaN(parseFloat(normalized));
+    };
+
+    $.validator.methods.range = function (value, element, param) {
+        if (this.optional(element)) {
+            return true;
+        }
+
+        var normalized = parseFloat(normalizeNumber(value));
+        return normalized >= param[0] && normalized <= param[1];
+    };
+
+    $.validator.methods.min = function (value, element, param) {
+        if (this.optional(element)) {
+            return true;
+        }
+
+        return parseFloat(normalizeNumber(value)) >= param;
+    };
+
+    $.validator.methods.max = function (value, element, param) {
+        if (this.optional(element)) {
+            return true;
+        }
+
+        return parseFloat(normalizeNumber(value)) <= param;
+    };
+</script>
