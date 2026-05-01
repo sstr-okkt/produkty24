@@ -9,7 +9,7 @@
     ViewData["Title"] = @Localizer["Title"];
 }
 
-@model OrderItemCreateViewModel
+@model OrderItemEditViewModel
 
 <div class="text-center">
     <h1 class="display-4">@Localizer["Title"]</h1>
@@ -19,7 +19,7 @@
     </div>
     <br>
 
-    <form class="text-align-left" asp-antiforgery="true" asp-action="Create" asp-controller="OrdersItems">
+    <form class="text-align-left" asp-antiforgery="true" asp-action="Edit" asp-controller="OrdersItems" asp-route-id="@Model.Id">
         <div>
             <div class="form-group">
                 <label asp-for="StockItemId">* @SharedLocalizer["StockItemName"]</label>
@@ -43,8 +43,9 @@
                 <span class="color-red" asp-validation-for="Discount"></span>
             </div>
             <div class="form-group text-align-right">
+                <input hidden type="text" asp-for="Id" />
                 <input hidden type="text" asp-for="OrderId" />
-                <input class="btn btn-primary" type="submit" value="@SharedLocalizer["Create"]" />
+                <input class="btn btn-primary" type="submit" value="@SharedLocalizer["Save"]" />
             </div>
         </div>
     </form>    

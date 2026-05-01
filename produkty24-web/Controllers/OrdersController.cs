@@ -94,10 +94,22 @@ namespace Produkty24_Web.Controllers
             return RedirectToAction("Edit", new { id = createdOrder.Id });
         }
 
-        public async Task<IActionResult> Edit([FromRoute] int? id)
+        public async Task<IActionResult> Edit([FromRoute] int? id, [FromQuery(Name = "orderId")] int? orderId)
         {
+            if ((id == null || id < 1) && orderId != null && orderId > 0)
+            {
+                id = orderId;
+            }
+
             if (id == null || id < 1) {
-                id = (int)TempData["OrderId"];
+                if (TempData["OrderId"] is int tempOrderId && tempOrderId > 0)
+                {
+                    id = tempOrderId;
+                }
+                else
+                {
+                    return NotFound();
+                }
             }
 
             OrderEditViewModel order;
