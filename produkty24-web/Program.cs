@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Data.SQLite;
 using Produkty24_Web.Models.Entities;
 using Microsoft.AspNetCore.Hosting;
+using NReco.Logging.File;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +31,8 @@ builder.Services.AddLogging(loggingBuilder => {
 builder.Services.TryAddSingleton<IDateTimeProvider, DateTimeProvider>();
 builder.Services.AddHttpClient("apiClient", c => {
     c.BaseAddress = new System.Uri(builder.Configuration.GetValue<string>("Api:Uri"));
-    c.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", builder.Configuration.GetValue<string>("Api:Token"));
+    var headerName = builder.Configuration.GetValue<string>("Api:HeaderName") ?? "Ocp-Apim-Subscription-Key";
+    c.DefaultRequestHeaders.Add(headerName, builder.Configuration.GetValue<string>("Api:Token"));
 });
 
 builder.Services
