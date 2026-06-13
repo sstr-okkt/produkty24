@@ -21,7 +21,7 @@ namespace Produkty24_Web.Controllers
             this.httpClient = factory.CreateClient("apiClient");
         }
 
-        public async Task<IActionResult> Index(int page = 1, int pageSize = 5)
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
         {
             var pageInfo = new PageInfo<StockArrivalViewModel>();
 
