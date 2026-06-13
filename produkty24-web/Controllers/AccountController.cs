@@ -89,11 +89,5 @@ namespace Produkty24_Web.Controllers
             return RedirectToAction("Login", "Account");
         }
 
-        public IActionResult AccessDenied()
-        {
-            return View();
-        }
-
-
     }
 }
