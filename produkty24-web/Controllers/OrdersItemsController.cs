@@ -168,9 +168,9 @@ namespace Produkty24_Web.Controllers
                 return;
             }
 
-            if (float.TryParse(rawValue, NumberStyles.Float, new CultureInfo("ru-RU"), out var ruValue))
+            if (float.TryParse(rawValue, NumberStyles.Float, new CultureInfo("uk-UA"), out var uaValue))
             {
-                assign(ruValue);
+                assign(uaValue);
                 ModelState.Remove(fieldName);
             }
         }
