@@ -122,10 +122,10 @@ CREATE TABLE IF NOT EXISTS Payments (
             if (countryCount == 0)
             {
                 connection.Execute(@"
-INSERT INTO Countries (Id, Name) VALUES (1, 'Украина'), (2, 'Молдова'), (3, 'Польша');
+INSERT INTO Countries (Id, Name) VALUES (1, 'Україна'), (2, 'Молдова'), (3, 'Польща');
 INSERT INTO Currencies (Id, Code) VALUES (1, 'EUR'), (2, 'USD'), (3, 'UAH');
-INSERT INTO ShippingMethods (Id, Name) VALUES (1, 'Новая почта'), (2, 'Укрпочта'), (3, 'Самовывоз');
-INSERT INTO OrderStatuses (Id, Name) VALUES (1, 'Готов'), (2, 'К отправке'), (3, 'Оплачен полностью'), (4, 'НОВЫЙ'), (5, 'Выставлен счёт'), (6, 'Оплачен частично'), (7, 'Отправлен');
+INSERT INTO ShippingMethods (Id, Name) VALUES (1, 'Нова пошта'), (2, 'Укрпошта'), (3, 'Самовивіз');
+INSERT INTO OrderStatuses (Id, Name) VALUES (1, 'Готово'), (2, 'До відправки'), (3, 'Оплачено повністю'), (4, 'НОВИЙ'), (5, 'Виставлено рахунок'), (6, 'Оплачено частково'), (7, 'Відправлено');
 INSERT INTO ExchangeRates (Id, Date, CurrencyId, Value) VALUES (1, '2000-01-01', 3, 1);
 ");
             }

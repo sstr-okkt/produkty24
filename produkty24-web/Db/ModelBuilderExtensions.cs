@@ -9,9 +9,9 @@ namespace Produkty24_Web.Db
         {
             modelBuilder.Entity<CountryEntity>()
                 .HasData(
-                   new CountryEntity { Id = 1, Name = "Украина" },
+                   new CountryEntity { Id = 1, Name = "Україна" },
                    new CountryEntity { Id = 2, Name = "Молдова" },
-                   new CountryEntity { Id = 3, Name = "Польша" }
+                   new CountryEntity { Id = 3, Name = "Польща" }
             );
 
             modelBuilder.Entity<CurrencyEntity>()
@@ -23,20 +23,20 @@ namespace Produkty24_Web.Db
 
             modelBuilder.Entity<ShippingMethodEntity>()
                 .HasData(
-                   new ShippingMethodEntity { Id = 1, Name = "Новая почта" },
-                   new ShippingMethodEntity { Id = 2, Name = "Укрпочта" },
-                   new ShippingMethodEntity { Id = 3, Name = "Самовывоз" }
+                   new ShippingMethodEntity { Id = 1, Name = "Нова пошта" },
+                   new ShippingMethodEntity { Id = 2, Name = "Укрпошта" },
+                   new ShippingMethodEntity { Id = 3, Name = "Самовивіз" }
             );
 
             modelBuilder.Entity<OrderStatusEntity>()
                 .HasData(
-                   new OrderStatusEntity { Id = 1, Name = "Готов" },
-                   new OrderStatusEntity { Id = 2, Name = "К отправке" },
-                   new OrderStatusEntity { Id = 3, Name = "Оплачен полностью" },
-                   new OrderStatusEntity { Id = 4, Name = "НОВЫЙ" },
-                   new OrderStatusEntity { Id = 5, Name = "Выставлен счёт" },
-                   new OrderStatusEntity { Id = 6, Name = "Оплачен частично" },
-                   new OrderStatusEntity { Id = 7, Name = "Отправлен" }
+                   new OrderStatusEntity { Id = 1, Name = "Готово" },
+                   new OrderStatusEntity { Id = 2, Name = "До відправки" },
+                   new OrderStatusEntity { Id = 3, Name = "Оплачено повністю" },
+                   new OrderStatusEntity { Id = 4, Name = "НОВИЙ" },
+                   new OrderStatusEntity { Id = 5, Name = "Виставлено рахунок" },
+                   new OrderStatusEntity { Id = 6, Name = "Оплачено частково" },
+                   new OrderStatusEntity { Id = 7, Name = "Відправлено" }
             );
 
             modelBuilder.Entity<ExchangeRateEntity>()
