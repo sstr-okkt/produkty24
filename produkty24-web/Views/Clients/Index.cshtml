@@ -57,17 +57,13 @@
 
                     <td>@client.PostalCode</td>
                     <td style="text-align: right;">
-                        @using (Html.BeginForm(FormMethod.Post))
-                        {
-                         
-                            
+                        <span style="white-space: nowrap;">
                             <a class="btn btn-outline-success btn-sm" asp-route-id="@client.Id" asp-controller="Orders" asp-action="CreateFast">@SharedLocalizer["CreateOrder"]</a>
                             <a class="btn btn-outline-secondary btn-sm" asp-route-id="@client.Id" asp-action="Edit">@SharedLocalizer["Edit"]</a>
-
                             <button type="button" id="modalButton" class="btn btn-outline-danger btn-sm" data-client-id="@client.Id" data-client-name="@client.Name" data-bs-toggle="modal" data-bs-target="#deletionModal">
                                 @SharedLocalizer["Delete"]
-                            </button>                            
-                        }                        
+                            </button>
+                        </span>
                     </td>
                 </tr>
             }
