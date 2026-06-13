@@ -8,11 +8,6 @@ using Produkty24_API.Models.DTO.Payments;
 using Produkty24_API.Models.DTO.StockArrivals;
 using Produkty24_API.Models.DTO.StockItems;
 using Produkty24_API.Models.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Produkty24_API
 {
