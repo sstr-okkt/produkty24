@@ -2,13 +2,9 @@
 @using Produkty24_Web.ViewModels.Account
 @inject IViewLocalizer Localizer
 @inject IHtmlLocalizer<SharedResource> SharedLocalizer
-@inject IConfiguration Configuration
 
 @{
     ViewData["Title"] = @Localizer["Title"];
-    var isGoogleLoginEnabled =
-        !string.IsNullOrWhiteSpace(Configuration["Authentication:Google:ClientId"]) &&
-        !string.IsNullOrWhiteSpace(Configuration["Authentication:Google:ClientSecret"]);
 }
 
 @model LoginViewModel
@@ -34,10 +30,6 @@
     </div>
     <div class="form-group">
         <input class="btn btn-primary" type="submit" value="@Localizer["LogIn"]" />
-        @if (isGoogleLoginEnabled)
-        {
-            <a class="btn btn-outline-primary" asp-action="GoogleLogin">@Localizer["LogInWithGoogle"]</a>
-        }
     </div>
 </form>
 <br />

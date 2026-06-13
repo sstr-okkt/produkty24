@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Produkty24_Web.Models.Entities;
 using Produkty24_Web.ViewModels.Account;
-using System.Security.Claims;
 
 namespace Produkty24_Web.Controllers
 {
@@ -95,53 +94,6 @@ namespace Produkty24_Web.Controllers
             return View();
         }
 
-        public async Task<IActionResult> GoogleLogin()
-        {
-            var hasGoogleAuthProvider = (await signInManager.GetExternalAuthenticationSchemesAsync())
-                .Any(scheme => scheme.Name == "Google");
 
-            if (!hasGoogleAuthProvider)
-            {
-                return RedirectToAction(nameof(Login));
-            }
-
-            string redirectUrl = Url.Action("GoogleResponse", "Account");
-            var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
-            return new ChallengeResult("Google", properties);
-        }
-
-        public async Task<IActionResult> GoogleResponse()
-        {
-            ExternalLoginInfo info = await signInManager.GetExternalLoginInfoAsync();
-            if (info == null)
-                return RedirectToAction(nameof(Login));
-
-            var result = await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false);
-
-            string[] userInfo = { info.Principal.FindFirst(ClaimTypes.Name).Value, info.Principal.FindFirst(ClaimTypes.Email).Value };
-            if (result.Succeeded)
-                return RedirectToAction("Index", "Orders");
-            else
-            {
-                UserEntity user = new UserEntity
-                {
-                    Email = info.Principal.FindFirst(ClaimTypes.Email).Value,
-                    UserName = info.Principal.FindFirst(ClaimTypes.Email).Value
-                };
-
-                IdentityResult identResult = await userManager.CreateAsync(user);
-                if (identResult.Succeeded)
-                {
-                    identResult = await userManager.AddLoginAsync(user, info);
-                    if (identResult.Succeeded)
-                    {
-                        await signInManager.SignInAsync(user, false);
-                        return RedirectToAction("Index", "Orders");
-                    }
-                }
-
-                return AccessDenied();
-            }
-        }
     }
 }

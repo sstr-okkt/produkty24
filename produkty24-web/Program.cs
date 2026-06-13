@@ -48,28 +48,11 @@ builder.Services.AddIdentity<UserEntity, IdentityRole>()
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
-var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-
-var authenticationBuilder = builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
                     options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Account/Login");
                 });
-
-var googleAuthenticationConfigured =
-    !string.IsNullOrWhiteSpace(googleClientId) &&
-    !string.IsNullOrWhiteSpace(googleClientSecret);
-
-if (googleAuthenticationConfigured)
-{
-    authenticationBuilder.AddGoogle(googleOptions =>
-    {
-        googleOptions.ClientId = googleClientId;
-        googleOptions.ClientSecret = googleClientSecret;
-        googleOptions.SignInScheme = IdentityConstants.ExternalScheme;
-    });
-}
 
 builder.Services.Configure<RouteOptions>(options => options.LowercaseUrls = true);
 
@@ -92,11 +75,6 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 });
 
 var app = builder.Build();
-
-if (!googleAuthenticationConfigured)
-{
-    app.Logger.LogWarning("Google authentication is disabled because Authentication:Google:ClientId and ClientSecret are not configured.");
-}
 
 // Configure the HTTP request pipeline.
 
