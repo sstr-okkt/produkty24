@@ -49,11 +49,6 @@ using (var connection = new SqliteConnection(resolvedConnectionString))
 app.UseSwagger();
 app.UseSwaggerUI();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwaggerUI();
-}
-
 if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
