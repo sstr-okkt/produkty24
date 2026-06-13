@@ -246,8 +246,8 @@
   <data name="Payments" xml:space="preserve">
     <value>Payments</value>
   </data>
-  <data name="PaymentsTotal" xml:space="preserve">
-    <value>Payments Total</value>
+  <data name="Paid" xml:space="preserve">
+    <value>Paid</value>
   </data>
   <data name="Phone" xml:space="preserve">
     <value>Phone</value>
@@ -299,5 +299,11 @@
   </data>
   <data name="Total" xml:space="preserve">
     <value>Total</value>
+  </data>
+  <data name="ToPay" xml:space="preserve">
+    <value>To Pay</value>
+  </data>
+  <data name="Debt" xml:space="preserve">
+    <value>Debt</value>
   </data>
 </root>

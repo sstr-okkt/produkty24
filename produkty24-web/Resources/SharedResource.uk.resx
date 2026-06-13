@@ -246,8 +246,8 @@
   <data name="Payments" xml:space="preserve">
     <value>Платежі</value>
   </data>
-  <data name="PaymentsTotal" xml:space="preserve">
-    <value>Сума платежів</value>
+  <data name="Paid" xml:space="preserve">
+    <value>Сплачено</value>
   </data>
   <data name="Phone" xml:space="preserve">
     <value>Телефон</value>
@@ -299,5 +299,11 @@
   </data>
   <data name="Total" xml:space="preserve">
     <value>Разом</value>
+  </data>
+  <data name="ToPay" xml:space="preserve">
+    <value>До сплати</value>
+  </data>
+  <data name="Debt" xml:space="preserve">
+    <value>Борг</value>
   </data>
 </root>

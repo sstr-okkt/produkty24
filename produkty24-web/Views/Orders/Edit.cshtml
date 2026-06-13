@@ -69,9 +69,9 @@
     </table>
 
     <div class="text-align-left">
-        <h4>К оплате: @Model.Total.ToString("0.##")</h4>
-        <h4>Оплачено: @Model.PaymentsTotal.ToString("0.##")</h4>
-        <h4>Долг: @Model.Debt.ToString("0.##")</h4>
+        <h4>@SharedLocalizer["ToPay"]: @Model.Total.ToString("0.##")</h4>
+        <h4>@SharedLocalizer["Paid"]: @Model.PaymentsTotal.ToString("0.##")</h4>
+        <h4>@SharedLocalizer["Debt"]: @Model.Debt.ToString("0.##")</h4>
     </div>    
     <br>
 
